@@ -29,12 +29,14 @@ class MemberPanelProvider extends PanelProvider
             ->login()
             ->passwordReset()
             ->colors([
-                'primary' => Color::Amber,
+                'primary' => "#f44b34",
             ])
+            ->brandLogo(asset('logos/logo.png'))
+            ->darkModeBrandLogo(asset('logos/logo-white.png'))
+            ->brandLogoHeight('60px')
             ->discoverResources(in: app_path('Filament/Member/Resources'), for: 'App\Filament\Member\Resources')
             ->discoverPages(in: app_path('Filament/Member/Pages'), for: 'App\Filament\Member\Pages')
             ->pages([
-                Dashboard::class,
             ])
             ->discoverWidgets(in: app_path('Filament/Member/Widgets'), for: 'App\Filament\Member\Widgets')
             ->widgets([
@@ -54,6 +56,7 @@ class MemberPanelProvider extends PanelProvider
             ])
             ->authMiddleware([
                 Authenticate::class,
-            ]);
+            ])
+            ->viteTheme('resources/css/filament/member/theme.css');
     }
 }

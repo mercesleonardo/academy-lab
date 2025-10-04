@@ -1,0 +1,31 @@
+@import '../../../../vendor/filament/filament/resources/css/theme.css';
+
+@source '../../../../app/Filament/Member/**/*';
+@source '../../../../resources/views/filament/member/**/*';
+@source '../../../../resources/views/components/**/*';
+
+@theme {
+    --color-primary-lighter: #FFF0EF;
+    --color-primary-light: #FFE1E0;
+    --color-primary: #F5332C;
+    --color-primary-dark: #E7231C;
+    --color-primary-darker: #BF1A14;
+
+    --color-overlay: #BF1A14;
+    --color-overlay-dark: #00000099;
+    --color-overlay-darker: #000000CC;
+
+    --color-neutral-1200: #090A0B;
+    --color-neutral-1100: #101114;
+    --color-neutral-1000: #202328;
+    --color-neutral-900: #31363F;
+    --color-neutral-800: #454A54;
+    --color-neutral-700: #5A606C;
+    --color-neutral-600: #727988;
+    --color-neutral-500: #848B9A;
+    --color-neutral-400: #9EA5B3;
+    --color-neutral-300: #B6BDC8;
+    --color-neutral-2000: #D3D7DF;
+    --color-neutral-100: #E4E7EC;
+    --color-neutral-50: #F9FAFB;
+}
