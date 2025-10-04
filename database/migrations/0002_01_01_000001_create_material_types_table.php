@@ -17,6 +17,10 @@ return new class extends Migration
             $table->timestamps();
         });
 
+        DB::table('material_types')->insert([
+            ['name' => 'Material completar', 'created_at' => now(), 'updated_at' => now()],
+        ]);
+
 
     }
 
