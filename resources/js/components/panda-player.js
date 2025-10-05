@@ -43,25 +43,20 @@ export default function pandaPlayer({ elementId, activeLesson, options = {} }) {
 
         /** LIFECYCLE */
         async init() {
-            console.log("iniciando")
             await waitForPandaApi()
-            console.log("terminando")
             this.$nextTick(() => {
                 this.initPlayer()
             })
         },
 
         changeLesson(lesson) {
-            console.log("PLAYER BEFORE DELETE", this._player)
             this.destroy()
-            console.log("PLAYER AFTER DELETE", this._player)
 
             this.activeLesson = lesson
             this.$wire.setLesson(lesson)
         },
 
         initPlayer() {
-            console.log("tENTRA QUI");
             const player = new window.PandaPlayer(this._elementId, {
                 onReady: () => {
                     player.onEvent(({ message }) => {
@@ -70,7 +65,7 @@ export default function pandaPlayer({ elementId, activeLesson, options = {} }) {
                                 this.$dispatch('start-lesson')
                             }
                         } else if (message === 'panda_ended') {
-                            this.$wire.dispatch('complete-lesson')
+                            this.$dispatch('complete-lesson')
                             this.$dispatch('start-count-down')
                         }
                     })

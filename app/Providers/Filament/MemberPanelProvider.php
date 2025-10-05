@@ -97,7 +97,9 @@ class MemberPanelProvider extends PanelProvider
                 $builder->groups($productItems);
                 return $builder;
             })
-            ->renderHook(PanelsRenderHook::BODY_START, fn(): string => Blade::render('@livewire(\'global-chat\')'))
+            ->renderHook(
+                PanelsRenderHook::BODY_END,
+                fn(): string => Blade::render('@livewire(\'global-chat\')'))
             ->viteTheme('resources/css/filament/member/theme.css');
     }
 }
