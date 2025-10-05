@@ -1,0 +1,302 @@
+{
+  "name": "RAG GENERATOR",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "c20ebb2a-ef69-4754-8b57-6c3255621124",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "operation": "select",
+        "table": {
+          "__rl": true,
+          "value": "lessons",
+          "mode": "list",
+          "cachedResultName": "lessons"
+        },
+        "returnAll": true,
+        "where": {
+          "values": [
+            {
+              "column": "transcription_url",
+              "condition": "IS NOT NULL"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.mySql",
+      "typeVersion": 2.5,
+      "position": [
+        208,
+        0
+      ],
+      "id": "24ccc5ec-02c2-49f0-8457-cc02e2754a04",
+      "name": "Select rows from a table",
+      "credentials": {
+        "mySql": {
+          "id": "gZpmvElnMZZCaPru",
+          "name": "MySQL account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        416,
+        16
+      ],
+      "id": "a34713c7-2f7f-47ac-ab8a-0608c7ca67c7",
+      "name": "Loop Over Items"
+    },
+    {
+      "parameters": {
+        "bucketName": "academy",
+        "fileKey": "={{ $json.transcription_url }}"
+      },
+      "type": "n8n-nodes-base.s3",
+      "typeVersion": 1,
+      "position": [
+        688,
+        32
+      ],
+      "id": "781e04e5-aa14-4459-9bb0-6406710ce142",
+      "name": "Download a file",
+      "credentials": {
+        "s3": {
+          "id": "09TKS8SrDeInbXbA",
+          "name": "S3 account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "fromJson",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1,
+      "position": [
+        912,
+        32
+      ],
+      "id": "17704a26-744b-4720-89aa-874e8c5d4c27",
+      "name": "Extract from File"
+    },
+    {
+      "parameters": {
+        "jsCode": "function prepareChunks(inputJson, maxLen = 1000) {\n    // 1) Achata todos os segments do JSON\n    const segments = inputJson;\n\n    // 2) Quebra qualquer segment que exceda maxLen, interpolando tempo\n    const splitIfNeeded = (seg, limit) => {\n        const text = seg.text ?? \"\";\n        if (text.length <= limit) {\n            return [{ start: seg.start, end: seg.end, text }];\n        }\n        const pieces = [];\n        const total = text.length;\n        const dur = (seg.end ?? seg.start) - (seg.start ?? seg.end ?? 0);\n        let offset = 0;\n\n        while (offset < total) {\n            const slice = text.slice(offset, offset + limit);\n            // Interpolação linear de tempo baseada na posição do slice dentro do texto\n            const fracStart = offset / total;\n            const fracEnd = Math.min((offset + slice.length) / total, 1);\n            const pieceStart = (seg.start ?? 0) + dur * fracStart;\n            const pieceEnd = (seg.start ?? 0) + dur * fracEnd;\n\n            pieces.push({ start: pieceStart, end: pieceEnd, text: slice });\n            offset += slice.length;\n        }\n        return pieces;\n    };\n\n    // 3) Normaliza todos os segments para respeitarem maxLen individualmente\n    const normalized = segments.flatMap(seg => splitIfNeeded(seg, maxLen));\n\n    // 4) Monta os chunks até maxLen, respeitando fronteiras\n    const chunks = [];\n    let currentText = \"\";\n    let currentStart = null;\n    let currentEnd = null;\n\n    for (const seg of normalized) {\n        const clean = (seg.text || \"\").replace(/\\s+/g, \" \").trim(); // limpeza leve\n        if (!clean) continue;\n\n        const sep = currentText.length > 0 ? \" \" : \"\";\n        const nextLen = currentText.length + sep.length + clean.length;\n\n        if (nextLen <= maxLen) {\n            // Cabe no chunk atual\n            if (currentText.length === 0) {\n                currentStart = seg.start;\n            }\n            currentText += sep + clean;\n            currentEnd = seg.end;\n        } else {\n            // Não cabe -> fecha o chunk atual (se houver) e inicia um novo\n            if (currentText.length > 0) {\n                chunks.push({ chunk: currentText, start: currentStart, end: currentEnd });\n            }\n            // Inicia novo chunk com o segmento atual (garantido <= maxLen)\n            currentText = clean;\n            currentStart = seg.start;\n            currentEnd = seg.end;\n        }\n    }\n\n    // 5) Empurra o último chunk aberto\n    if (currentText.length > 0) {\n        chunks.push({ chunk: currentText, start: currentStart, end: currentEnd });\n    }\n\n    return chunks;\n}\n\nreturn prepareChunks($input.first().json.data.segments, 1000);\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1120,
+        32
+      ],
+      "id": "bcb59a7d-3ffe-4237-a06a-b87178f2c992",
+      "name": "Code"
+    },
+    {
+      "parameters": {
+        "mode": "insert",
+        "tableName": "lessons_vectorstore",
+        "embeddingBatchSize": 1000,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStorePGVector",
+      "typeVersion": 1.3,
+      "position": [
+        1472,
+        32
+      ],
+      "id": "42a4553f-0a51-474d-8870-d5ec1d5617a7",
+      "name": "Postgres PGVector Store",
+      "credentials": {
+        "postgres": {
+          "id": "kqTVCtksjF7ugnVR",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        1440,
+        176
+      ],
+      "id": "7c2d44a7-4478-435e-8184-dd3591bb5c62",
+      "name": "Embeddings OpenAI",
+      "credentials": {
+        "openAiApi": {
+          "id": "Ky3Jq4kykKe5D8Le",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsonMode": "expressionData",
+        "jsonData": "={{ $json.chunk }}",
+        "options": {
+          "metadata": {
+            "metadataValues": [
+              {
+                "name": "lesson_id",
+                "value": "={{ $('Loop Over Items').item.json.id }}"
+              },
+              {
+                "name": "lesson_name",
+                "value": "={{ $('Loop Over Items').item.json.name }}"
+              },
+              {
+                "name": "content_start_timestamp",
+                "value": "={{ $json.start }}"
+              },
+              {
+                "name": "content_end_timestamp",
+                "value": "={{ $json.end }}"
+              }
+            ]
+          }
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.documentDefaultDataLoader",
+      "typeVersion": 1.1,
+      "position": [
+        1616,
+        176
+      ],
+      "id": "ed46195b-4857-4da9-9283-205f27c1f83d",
+      "name": "Default Data Loader"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Select rows from a table",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Select rows from a table": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Download a file",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download a file": {
+      "main": [
+        [
+          {
+            "node": "Extract from File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract from File": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "Postgres PGVector Store",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings OpenAI": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Postgres PGVector Store",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Default Data Loader": {
+      "ai_document": [
+        [
+          {
+            "node": "Postgres PGVector Store",
+            "type": "ai_document",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Postgres PGVector Store": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "a8741233-0d38-4507-8a2c-13d613c1b813",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "09830962f893c158a2ca54f3b52187b1a5ec9f49dd97d43eb9cbaebb7ceadb1e"
+  },
+  "id": "CbJnocmaimq2N9TQ",
+  "tags": []
+}
