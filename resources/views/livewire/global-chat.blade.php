@@ -1,4 +1,5 @@
 <div
+    x-cloak
     x-data="{ open: false }"
     class="relative"
     x-on:keydown.window="
