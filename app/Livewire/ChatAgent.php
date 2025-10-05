@@ -110,11 +110,11 @@ class ChatAgent extends Component
             'role' => 'agent',
             'message' => $data['output']['response'],
             'lesson_id' => $this->activelesson->id ?? null,
-            'extra_attributes' => $data['output']['lessons'],
+            'extra_attributes' => $data['output']['lessons'] ?? null,
             'user_id' => auth()->id(),
         ]);
 
-        $lessons_collect = collect($data['output']['lessons']);
+        $lessons_collect = collect($data['output']['lessons'] ?? []);
         $lessons = Lesson::whereIn('id', $lessons_collect->pluck('lesson_id'))->get(['id', 'name']);
 
         $this->messages[] = [

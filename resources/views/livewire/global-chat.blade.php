@@ -34,7 +34,7 @@
             @click.away="open = false"
         >
 
-            <livewire:chat-agent :agent_url="config('n8n.general_agent_endpoint')" />
+            <livewire:chat-agent :agent_url="config('n8n.global_chat_endpoint')" />
 
         </div>
     </div>
