@@ -72,7 +72,7 @@ Product (Produto)
 
 1. **Clone o repositório**
 ```bash
-git clone https://github.com/beerandcodeteam/academy-lab.git
+git clone https://github.com/mercesleonardo/academy-lab.git
 cd academy-lab
 ```
 
@@ -250,16 +250,6 @@ php artisan test --coverage
 ## 📄 Licença
 
 Este projeto está sob a licença MIT. Veja o arquivo [LICENSE](LICENSE) para mais detalhes.
-
-## 🆘 Suporte
-
-Para suporte e dúvidas:
-- 📧 Email: [contato@beerandcode.team](mailto:contato@beerandcode.team)
-- 🐛 Issues: [GitHub Issues](https://github.com/beerandcodeteam/academy-lab/issues)
-
----
-
-Desenvolvido com ❤️ pela equipe [Beer & Code](https://github.com/beerandcodeteam)
 
 Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
 
