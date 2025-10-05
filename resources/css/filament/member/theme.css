@@ -3,6 +3,7 @@
 @source '../../../../app/Filament/Member/**/*';
 @source '../../../../resources/views/filament/member/**/*';
 @source '../../../../resources/views/components/**/*';
+@source '../../../../resources/views/livewire/**';
 
 @theme {
     --color-primary-lighter: #FFF0EF;
@@ -29,3 +30,32 @@
     --color-neutral-100: #E4E7EC;
     --color-neutral-50: #F9FAFB;
 }
+
+@layer utilities {
+    .mask-radial-top {
+        -webkit-mask-image: radial-gradient(ellipse at top, black, transparent 80%);
+        mask-image: radial-gradient(ellipse at top, black, transparent 80%);
+        -webkit-mask-repeat: no-repeat;
+        mask-repeat: no-repeat;
+        -webkit-mask-size: cover;
+        mask-size: cover;
+    }
+
+    .fi-page-header-main-ctn {
+        @apply py-0;
+    }
+
+    .richtext { @apply text-neutral-300 leading-relaxed; }
+    .richtext :where(p){ @apply mb-3; }
+    .richtext :where(ul){ @apply list-disc pl-6 space-y-1; }
+    .richtext :where(ol){ @apply list-decimal pl-6 space-y-1; }
+    .richtext :where(li){ @apply marker:text-neutral-500; }
+    .richtext :where(h1){ @apply text-xl font-semibold mb-3; }
+    .richtext :where(h2){ @apply text-lg font-semibold mb-2; }
+    .richtext :where(h3){ @apply text-base font-semibold mb-2; }
+    .richtext :where(a){ @apply underline hover:no-underline; }
+    .richtext :where(blockquote){ @apply border-l-4 border-neutral-700 pl-4 italic my-3; }
+}
+
+
+

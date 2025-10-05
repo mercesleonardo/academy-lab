@@ -10,14 +10,15 @@ class ProductTrack extends Page
     public Product $product;
 
     protected string $view = 'filament.member.pages.product-track';
-
     protected static bool $shouldRegisterNavigation = false;
 
     protected static ?string $slug = 'produto/{product}';
+    protected static ?string $title = '';
 
     public static function canAccess(): bool
     {
         $product = request()->route('product');
+
         return auth()->user()->can('view', $product);
     }
 
@@ -30,5 +31,7 @@ class ProductTrack extends Page
             'productTracks.productTrackPaths.path'
         ]);
     }
+
+
 
 }
